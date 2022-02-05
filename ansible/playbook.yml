@@ -4,5 +4,5 @@
    tasks: 
    - copy: src=movie-similarity-1k.py dest=movie-similarity-1k.py
    - copy: src=u.item dest=u.item
-   - shell: "spark-submit --executor-memory 1g movie-similarity-1k.py 100 > similar-movies-100.txt"
-   - shell: "aws s3 cp similar-movies-100.txt s3://spark-qifan/similarity-results/"
+   - shell: "spark-submit --executor-memory 1g movie-similarity-1k.py 300 > similar-movies-300.txt"
+   - shell: "aws s3 cp similar-movies-300.txt s3://spark-qifan/similarity-results/"
