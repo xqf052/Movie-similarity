@@ -1,0 +1,8 @@
+.serverless
+node_modules
+package-lock.json
+MyEC2Key.pem
+hosts
+Dockerfile
+Jenkinsfile-1
+serverless-deployment
