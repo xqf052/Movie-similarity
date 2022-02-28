@@ -2,7 +2,7 @@
  - hosts: test1
    gather_facts: false
    tasks: 
-   - copy: src=movie-similarity-1k.py dest=movie-similarity-1k.py
-   - copy: src=u.item dest=u.item
-   - shell: "spark-submit --executor-memory 1g movie-similarity-1k.py 300 > similar-movies-300.txt"
-   - shell: "aws s3 cp similar-movies-300.txt s3://spark-qifan/similarity-results/"
+   - copy: src=cosine-similarity.py dest=cosine-similarity.py
+   - copy: src=movie_titles.csv dest=movie_titles.csv
+   - shell: "spark-submit --executor-memory 1g cosine-similarity.py 50 > result.txt"
+   - shell: "aws s3 cp result.txt s3://spark-qifan/similarity-results/"
