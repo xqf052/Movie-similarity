@@ -5,4 +5,4 @@
    - copy: src=cosine-movie-similarity.py dest=cosine-movie-similarity.py
    - copy: src=movie_titles.csv dest=movie_titles.csv
    - shell: "spark-submit --executor-memory 1g cosine-movie-similarity.py 50"
-   - shell: "aws s3 cp movie.json s3://spark-qifan/similarity-results/"
+   - shell: "aws s3 cp movie.json s3://movie-similarity-bucket-xqf052/"
