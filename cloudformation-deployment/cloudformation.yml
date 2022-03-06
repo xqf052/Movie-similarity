@@ -3,6 +3,24 @@ Parameters:
     Description: ssh key for ec2 instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  DynamoDBTableName:
+    Type: String
+    Default: movie-similarity-table
+  LambdaRoleName:
+    Type: String
+    Default: lambda-dynamodb-IAMRole
+  LambdaFunctionName:
+    Type: String
+    Default: load-into-dynamodb-function
+  S3BucketName:
+    Type: String
+    Default: spark-qifan
+  S3KeyName:
+    Type: String
+    Default: s3-to-dynamodb.zip
+  PublicS3bucketName:
+    Type: String
+    Default: movie-similarity-bucket-xqf052
 
 Resources:
   EmrLogBucket:
@@ -75,6 +93,77 @@ Resources:
           InstanceType: m3.xlarge
           Market: ON_DEMAND
           Name: Core
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - ProcessingLambdaPermission
+    Properties:
+      BucketName: !Ref PublicS3bucketName
+      AccessControl: PublicReadWrite
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt MylambdaFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: movie.json
+
+  ProcessingLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref MylambdaFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub 'arn:aws:s3:::${PublicS3bucketName}'
+      SourceAccount: !Ref AWS::AccountId
+
+  MyDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: !Ref  DynamoDBTableName
+        AttributeDefinitions:
+          - AttributeName: movie_id
+            AttributeType: N
+          - AttributeName: similar_movie_id
+            AttributeType: N
+        KeySchema:
+          - AttributeName: movie_id
+            KeyType: HASH
+          - AttributeName: similar_movie_id
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+  ExecutionLambda:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref LambdaRoleName
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+
+  MylambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: load data into dynamodb table
+      FunctionName: !Ref LambdaFunctionName
+      Handler: s3-to-dynamodb.lambda_handler
+      MemorySize: 256
+      Role: !GetAtt 'ExecutionLambda.Arn'
+      Runtime: python3.9
+      Timeout: 300
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: !Ref S3KeyName
 
 
 Outputs:
