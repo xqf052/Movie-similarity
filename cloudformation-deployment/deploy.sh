@@ -7,5 +7,5 @@ sleep 900
 export publicIp=$(aws cloudformation --region ap-southeast-2 describe-stacks --stack-name movie-similarity-stack --query "Stacks[0].Outputs[0].OutputValue")
 echo $publicIp
 cp /var/jenkins_home/workspace/movie-similarity-pipeline-github/ansible/inventory /var/jenkins_home/workspace/movie-similarity-pipeline-github/ansible/hosts
-echo 'test1 ansible_host='${publicIp}' ansible_user=hadoop ansible_private_key_file=../cloudformation-deployment/MyKey.pem' >> /var/jenkins_home/workspace/movie-similarity-pipeline-github/ansible/hosts
+echo 'EMR ansible_host='${publicIp}' ansible_user=hadoop ansible_private_key_file=../cloudformation-deployment/MyKey.pem' >> /var/jenkins_home/workspace/movie-similarity-pipeline-github/ansible/hosts
 

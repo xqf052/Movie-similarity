@@ -3,11 +3,12 @@ from pyspark.sql import functions as func
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, LongType
 import codecs
 import sys
+import json
 
 #To run on EMR successfully + output results for Star Wars:
-#aws s3 cp s3://spark-qifan/cosine-similarity.py ./
+#aws s3 cp s3://spark-qifan/cosine-movie-similarity.py ./
 #aws s3 cp s3://spark-qifan/movie_titles.csv ./
-#spark-submit --executor-memory 1g cosine-similarity.py 50
+#spark-submit --executor-memory 1g cosine-movie-similarity.py 50
 
 
 def load_movie_names():
@@ -67,14 +68,30 @@ if (len(sys.argv) > 1):
 
     results = related_cos_results.sort(func.col('score').desc()).take(10)
 
-    print('Top 10 similar movie for: ' + movieDict[movieID])
+    movie_name = movieDict[movieID]
+    print('Top 10 similar movie for: ' + movie_name)
+
+    similar_movies_list = []
 
     for result in results:
+        similar_movie_dict = {}
         similar_movieID = result.movie1
         if(similar_movieID == movieID):
             similar_movieID = result.movie2
-            print(movieDict[similar_movieID] + '\tscore: ' + str(result.score) + \
-              '\tstrength: ' + str(result.pairs_number))
+            similar_movie_name = movieDict[similar_movieID]
+            score = str(result.score)
+            strength = str(result.pairs_number)
+            print(similar_movie_name + '\tscore: ' + score + \
+              '\tstrength: ' + strength)
+            similar_movie_dict['movie_id'] = movieID
+            similar_movie_dict['similar_movie_id'] = similar_movieID
+            similar_movie_dict['movie_name'] = movie_name
+            similar_movie_dict['similar_movie_name'] = similar_movie_name
+            similar_movie_dict['score'] = score
+            similar_movie_dict['strength'] = strength
+            similar_movies_list.append(similar_movie_dict)
 
+    with open('movie.json', 'w') as f:
+        json.dump(similar_movies_list, f)
 
 spark.stop()

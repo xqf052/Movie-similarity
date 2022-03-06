@@ -1,8 +1,8 @@
 ---
- - hosts: test1
+ - hosts: EMR
    gather_facts: false
    tasks: 
-   - copy: src=cosine-similarity.py dest=cosine-similarity.py
+   - copy: src=cosine-movie-similarity.py dest=cosine-movie-similarity.py
    - copy: src=movie_titles.csv dest=movie_titles.csv
-   - shell: "spark-submit --executor-memory 1g cosine-similarity.py 20 > result.txt"
-   - shell: "aws s3 cp result.txt s3://spark-qifan/similarity-results/"
+   - shell: "spark-submit --executor-memory 1g cosine-movie-similarity.py 50"
+   - shell: "aws s3 cp movie.json s3://spark-qifan/similarity-results/"
